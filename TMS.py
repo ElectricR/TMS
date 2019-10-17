@@ -83,7 +83,7 @@ class Window(QWidget):
         global TMS
         for i in TMS.tasks.items():
             q.setPen(self.color_determinant(i[1]["Color"]))
-    
+            
     def color_determinant(self,string):
         if string=="Red":
             return QColor(255,0,0)
@@ -96,7 +96,18 @@ class Window(QWidget):
         
 def task_creator():
     global TMS, window
-    TMS.tasks[window.new_task_title_textbox.text()]={"Description": window.new_task_description_textbox.toPlainText(),"Time": window.new_task_time_textbox.text(),"Color":window.new_task_color_textbox.text()}
+    startdate=window.new_task_time_textbox.text().split(', ')[0]
+    if int(startdate)>=time.localtime()[2]:
+        startdate=startdate+time.strftime(" %m %Y",time.localtime())
+    else:
+        month=int(time.localtime()[1])+1
+        if month>12:
+            month=1
+        startdate= startdate+' '+str(month)+time.strftime(" %Y",time.localtime())
+    d={"Repeats":window.new_task_time_textbox.text().split(', ')[-1],
+       "Startdate":startdate,
+       "Time": window.new_task_time_textbox.text().split(', ')[1:-1]}
+    TMS.tasks[window.new_task_title_textbox.text()]={"Description": window.new_task_description_textbox.toPlainText(),"Time": d,"Color":window.new_task_color_textbox.text()}
     window.new_task_title_textbox.hide()
     window.new_task_description_textbox.hide()
     window.new_task_time_textbox.hide()    
@@ -105,7 +116,7 @@ def task_creator():
     window.new_task_button.show()
 
     with open("tasks.txt","w") as f:
-        json.dump(TMS.tasks,f)
+        json.dump(TMS.tasks,f, indent=4)
 
 
 if __name__=="__main__":
