@@ -1,6 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolTip, QLineEdit, QTextEdit
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QPainter
+from PyQt5.QtCore import Qt
+import time
 class TimeManagementSystem():
     def __init__(self):
         self.tasks={}
@@ -58,7 +60,28 @@ class Window(QWidget):
         self.create_new_task_button.show()
         
               
-
+    def paintEvent(self,event):
+        q=QPainter()
+        q.setPen(Qt.red)   
+        q.begin(self)
+        self.plot_drawing(q)
+        self.task_drawing(q)
+        q.end()
+        self.update()
+        
+    def plot_drawing(self,q):
+        q.drawLine(425,225,425,275)
+        q.drawLine(50,250,800,250) 
+        timeshift=time.localtime()[5]/60
+        timedist=(800-50)/24
+        for i in range(-11,13):
+            q.drawLine(425+int((i-timeshift)*timedist),240,425+int((i-timeshift)*timedist),260)
+    
+    def task_drawing(self,q):
+        pass
+        
+            
+        
 def task_creator():
     global TMS, window
     TMS.tasks[window.new_task_title_textbox.text()]=Task(window.new_task_title_textbox.text(),window.new_task_description_textbox.toPlainText(),window.new_task_time_textbox.text())
@@ -73,4 +96,4 @@ if __name__=="__main__":
     TMS=TimeManagementSystem()
     app=QApplication(sys.argv)
     window=Window()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
