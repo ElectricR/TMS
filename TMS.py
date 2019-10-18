@@ -74,16 +74,38 @@ class Window(QWidget):
     def plot_drawing(self,q):
         q.drawLine(425,225,425,275)
         q.drawLine(50,250,800,250) 
-        timeshift=time.localtime()[4]/60
-        timedist=(800-50)/24
-        for i in range(-11,13):
-            q.drawLine(425+int((i-timeshift)*timedist),240,425+int((i-timeshift)*timedist),260)
+        #timeshift=375+(-12*60+time.localtime()[3]*60+time.localtime()[4])*375/12/60
+        #q.drawLine(50+timeshift,235,50+timeshift,265)
+            
     
     def task_drawing(self,q):
         global TMS
+        timeshift=time.localtime()[4]/60
         for i in TMS.tasks.items():
-            q.setPen(self.color_determinant(i[1]["Color"]))
-            
+            lasttime=0
+            for j in i[1]["Time"]["Time"]:
+                if i[1]["Time"]["Repeats"]=="Inf":
+                    repeat_count=9999
+                else:
+                    repeat_count=int(i[1]["Repeats"])
+                dateshift=0
+                for k in range(-1,min(repeat_count,2)):
+                    date=time.mktime(time.strptime(i[1]["Time"]["Startdate"],"%d %m %Y"))+k*24*60*60
+                    startbari=date+int(j.split('-')[0].split(':')[0])*60*60+int(j.split('-')[0].split(':')[1])*60+dateshift*24*3600
+                    if startbari<lasttime:
+                        dateshift+=1
+                        startbari+=24*3600
+                    lasttime=startbari
+                    endbari=date+int(j.split('-')[1].split(':')[0])*60*60+int(j.split('-')[1].split(':')[1])*60+dateshift*24*3600
+                    if endbari<lasttime:
+                        dateshift+=1
+                        endbari+=24*3600
+                    lasttime=endbari    
+                    x=425+(startbari-time.time())/60/60*750/24
+                    width=(endbari-startbari)/60/60*750/24
+                    if x+width>50 and x<800:
+                        q.fillRect(x,240,width,20,self.color_determinant(i[1]["Color"]))
+                
     def color_determinant(self,string):
         if string=="Red":
             return QColor(255,0,0)
@@ -91,6 +113,8 @@ class Window(QWidget):
             return QColor(0,255,0)
         if string=="Blue":
             return QColor(0,0,255) 
+        if string =="Pink":
+            return QColor(255,84,167)
         
             
         
